@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class Map : MonoBehaviour
 {
+    //방향별 포탈, 기본값은 SetActive(false)
     public GameObject upPortal;
     public GameObject downPortal;
     public GameObject leftPortal;
@@ -15,7 +17,4 @@ public class Map : MonoBehaviour
     public bool isLeft;
     public bool isRight;
 
-    //현재 맵의 2차원 배열 주소값
-    public int Row;
-    public int Col;
 }
