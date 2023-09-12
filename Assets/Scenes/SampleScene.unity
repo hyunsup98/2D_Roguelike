@@ -259,6 +259,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01e0eb5286090a44280be94d9a26ed38, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bossMap: {fileID: 7408023490745265880, guid: 200af27ed87cbb54d9602e3eb76b49ef, type: 3}
   mapList:
   - {fileID: 6511867578002268859, guid: 125abc20e51c8bf448e1518fc58da1d8, type: 3}
   - {fileID: 3798075553898488047, guid: 1fc3177a692d6f94e8660644590ae40b, type: 3}
@@ -271,8 +272,8 @@ MonoBehaviour:
   - {fileID: 4729440344939616757, guid: 7bb739cb908955e4b9008f2ca248ee99, type: 3}
   - {fileID: 9109935496999703930, guid: 521a471fee32e2e41816fc864cefd6b9, type: 3}
   transMap: {fileID: 585794018761696702, guid: dd68a569f8b5e234c8d017f43217fb79, type: 3}
-  x: 3
-  y: 6
+  x: 5
+  y: 5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

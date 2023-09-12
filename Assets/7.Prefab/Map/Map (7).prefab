@@ -137,12 +137,10 @@ MonoBehaviour:
   downPortal: {fileID: 1565837919820131005}
   leftPortal: {fileID: 4460189419130394995}
   rightPortal: {fileID: 4037128757236588106}
-  isUp: 0
-  isDown: 0
-  isLeft: 0
-  isRight: 0
-  Row: 0
-  Col: 0
+  isUp: 1
+  isDown: 1
+  isLeft: 1
+  isRight: 1
 --- !u!212 &6029268897571265912
 SpriteRenderer:
   m_ObjectHideFlags: 0
