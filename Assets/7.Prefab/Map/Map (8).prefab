@@ -138,7 +138,7 @@ MonoBehaviour:
   leftPortal: {fileID: 47447245188649299}
   rightPortal: {fileID: 9032322174402901274}
   isUp: 1
-  isDown: 1
+  isDown: 0
   isLeft: 1
   isRight: 1
 --- !u!212 &1967991290230114812

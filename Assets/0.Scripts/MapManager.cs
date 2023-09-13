@@ -4,23 +4,18 @@ using UnityEngine;
 
 public class MapManager : MonoBehaviour
 {
-    //<수정필요>보스맵, 보스맵은 총 3개이므로 추후 리스트로 변경될 예정
-    [SerializeField] Map bossMap;
-    //맵 프리팹을 넣을 배열
-    [SerializeField] List<Map> mapList = new List<Map>();
-    //맵을 담을 위치 프리팹
-    [SerializeField] TransMap transMap;
 
-    //조건 체크할 다음 맵을 넣는 리스트
-    List<Map> nextMap = new List<Map>();
+    [SerializeField] Map laspMap;                           //보스맵으로 갈 수 있는 마지막 방은 따로 관리
+    [SerializeField] List<Map> mapList = new List<Map>();   //맵 프리팹을 넣을 배열
+    [SerializeField] TransMap transMap;                     //맵을 담을 위치 프리팹
 
-    //맵 프리팹이 들어갈 배열
-    public TransMap[,] maps;
+    List<Map> nextMap = new List<Map>();    //조건 체크할 다음 맵을 넣는 리스트
+    public TransMap[,] maps;                //맵 프리팹이 들어갈 배열
 
     //2차원 배열의 [x, y]값
     public int x, y;
 
-    int a = -1;
+    int a = 0;
 
     private void Awake()
     {
@@ -39,12 +34,7 @@ public class MapManager : MonoBehaviour
         }
         SetStartMap();
 
-        foreach(var item in nextMap)
-        {
-            Debug.Log(item.name);
-        }
     }
-
 
     //처음 시작할 맵 타입과 위치를 정해주기
     void SetStartMap()
@@ -54,9 +44,9 @@ public class MapManager : MonoBehaviour
         Map startMap = Instantiate(mapList[randMap]);
         mapList.RemoveAt(randMap);
 
-        //생성한 시작 맵을 담을 랜덤 위치 생성하기
-        int randRow = Random.Range(0, maps.GetLength(0));
-        int randCol = Random.Range(0, maps.GetLength(1));
+        //전체 맵의 가로 혹은 세로가 3칸 이상일 경우 스타트맵은 안쪽 공간에서 시작하기
+        int randRow = x > 2 ? Random.Range(1, maps.GetLength(0) - 1) : Random.Range(0, maps.GetLength(0));
+        int randCol = y > 2 ? Random.Range(1, maps.GetLength(1) - 1) : Random.Range(0, maps.GetLength(1));
         TransMap startPos = maps[randRow, randCol];
 
         //시작 맵을 지정한 위치에 담기
@@ -65,14 +55,46 @@ public class MapManager : MonoBehaviour
         startMap.transform.localPosition = Vector3.zero;
 
         CheckCanMove(startMap, randRow, randCol);
+
+    }
+
+    void CheckDirPortal(Map map, Map nextMap, ref bool rotate, ref List<Map> spareMap, ref List<GameObject> canMovePortalList)
+    {
+        if (nextMap == null)
+        {
+            List<Map> mm = new List<Map>();
+            foreach (var item in mapList)
+            {
+                if (item.isDown)
+                    mm.Add(item);
+            }
+            if (mm.Count > 0)
+            {
+                int rand = Random.Range(0, mm.Count);
+                spareMap.Add(mm[rand]);
+                mapList.Remove(mm[rand]);
+
+                canMovePortalList.Add(map.upPortal);
+            }
+            else
+                rotate = false;
+        }
+        else
+        {
+            if (nextMap.isDown)
+            {
+                rotate = true;
+                map.upPortal.gameObject.SetActive(true);
+            }
+            else
+                rotate = false;
+        }
     }
 
     //맵에서 이동할 수 있는 방향을 체크
     void CheckCanMove(Map map, int row, int col)
     {
-        a++;
-
-        //canMovePortalList에 조건이 맞는 포탈을 다 후보로 넣어둠
+        //조건에 충족하는 특정 방향 포탈들을 넣어두는 리스트
         List<GameObject> canMovePortalList = new List<GameObject>();
         List<Map> spareMap = new List<Map>();
 
@@ -80,10 +102,11 @@ public class MapManager : MonoBehaviour
         //조건2. 그 방향의 끝에 있는게 아닌지
         //조건3. 서로 방향이 맞물리는 맵이 남아있는지 (up - down / left - right)
         //위 조건들을 체크만 하고 해당되면 바로 canMovePortalList에 추가해준 뒤 실질적인 동작은 뒤에서 한다
+
         //isUp
         if (map.isUp && row != 0)
         {
-            if(maps[row - 1, col].map == null)
+            if (maps[row - 1, col].map == null)
             {
                 List<Map> mm = new List<Map>();
                 foreach (var item in mapList)
@@ -119,7 +142,7 @@ public class MapManager : MonoBehaviour
         //isDown
         if (map.isDown && row != maps.GetLength(0) - 1)
         {
-            if(maps[row + 1, col].map == null)
+            if (maps[row + 1, col].map == null)
             {
                 List<Map> mm = new List<Map>();
                 foreach (var item in mapList)
@@ -140,7 +163,7 @@ public class MapManager : MonoBehaviour
             }
             else
             {
-                if(maps[row + 1, col].map.isUp)
+                if (maps[row + 1, col].map.isUp)
                 {
                     map.isDown = true;
                     map.downPortal.gameObject.SetActive(true);
@@ -148,7 +171,7 @@ public class MapManager : MonoBehaviour
                 else
                     map.isDown = false;
             }
-            
+
         }
         else
             map.isDown = false;
@@ -156,7 +179,7 @@ public class MapManager : MonoBehaviour
         //isLeft
         if (map.isLeft && col != 0)
         {
-            if(maps[row, col - 1].map == null)
+            if (maps[row, col - 1].map == null)
             {
                 List<Map> mm = new List<Map>();
                 foreach (var item in mapList)
@@ -177,7 +200,7 @@ public class MapManager : MonoBehaviour
             }
             else
             {
-                if(maps[row, col - 1].map.isRight)
+                if (maps[row, col - 1].map.isRight)
                 {
                     map.isLeft = true;
                     map.leftPortal.gameObject.SetActive(true);
@@ -192,7 +215,7 @@ public class MapManager : MonoBehaviour
         //isRight
         if (map.isRight && col != maps.GetLength(1) - 1)
         {
-            if(maps[row, col + 1].map == null)
+            if (maps[row, col + 1].map == null)
             {
                 List<Map> mm = new List<Map>();
                 foreach (var item in mapList)
@@ -213,35 +236,38 @@ public class MapManager : MonoBehaviour
             }
             else
             {
-                if(maps[row, col + 1].map.isLeft)
+                if (maps[row, col + 1].map.isLeft)
                 {
                     map.isRight = true;
                     map.rightPortal.gameObject.SetActive(true);
                 }
                 else
-                    map.isRight= false;
+                    map.isRight = false;
             }
         }
         else
             map.isRight = false;
 
+        //조건에 충족하는 포탈이 있을 경우 실행
         if (canMovePortalList.Count != 0)
         {
-            //포탈을 몇 개 만들지 난수로 정함
+            //포탈을 몇 개 만들지를 정할 랜덤 난수
             int randPortal = Random.Range(1, canMovePortalList.Count + 1);
 
             for (int i = 0; i < randPortal; i++)
             {
-                //이어서 생성할 맵의 좌표
+                //생성할 맵의 좌표
                 int x = row;
                 int y = col;
 
+                //어떤 방향으로 길을 뚫을지 정할 랜덤 난수
                 int rand = Random.Range(0, canMovePortalList.Count);
 
                 PortalCreate(canMovePortalList[rand]);
 
                 Map m = Instantiate(spareMap[rand]);
 
+                //어떤 방향의 포탈인지에 따라 좌표값을 변경
                 switch (canMovePortalList[rand].name)
                 {
                     case "upPortal":
@@ -269,23 +295,32 @@ public class MapManager : MonoBehaviour
             }
 
             OffBool(map, canMovePortalList);
-            foreach(var item in spareMap)
-            {
-                mapList.Add(item);
-            }
-            spareMap.Clear();
+            AddMapList(spareMap);
         }
 
-        while(nextMap.Count > a)
+        while (nextMap.Count > a)
         {
-            CheckCanMove(nextMap[a], (int)nextMap[a].transform.parent.position.y * -1, (int)nextMap[a].transform.parent.position.x);
+            CheckCanMove(nextMap[a], (int)nextMap[a].transform.parent.position.y * -1, (int)nextMap[a++].transform.parent.position.x);
+        }
+    }
+
+    void CreateNextMap()
+    {
+
+    }
+
+    //조건에 만족해 mapList에서 꺼내두었지만 사용하지 않은 맵들을 다시 mapList에 넣기
+    void AddMapList(List<Map> map)
+    {
+        foreach (var item in map)
+        {
+            mapList.Add(item);
         }
     }
 
     //포탈 생성 조건에 만족해 리스트에 넣었지만 쓰이지 않은 방향을 false로 만듬
     void OffBool(Map map, List<GameObject> list)
     {
-        //쓰이지 않은 포탈 방향을 false로 바꿈
         foreach (var item in list)
         {
             switch (item.name)
